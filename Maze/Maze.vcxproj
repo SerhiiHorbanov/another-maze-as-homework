@@ -127,7 +127,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Maze.cpp" />
+    <ClCompile Include="Input.cpp" />
+    <ClCompile Include="MazeMap.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="MazeGame.cpp" />
+    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Tile.cpp" />
+    <ClCompile Include="Vector2i.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Input.h" />
+    <ClInclude Include="MazeMap.h" />
+    <ClInclude Include="MazeGame.h" />
+    <ClInclude Include="Player.h" />
+    <ClInclude Include="Tile.h" />
+    <ClInclude Include="TileType.h" />
+    <ClInclude Include="Vector2i.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
