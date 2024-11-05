@@ -12,18 +12,18 @@ Player Player::GetRandomlyPlacedPlayer(Vector2i mapSize)
 
 void Player::Walk(const MazeMap& map, const Vector2i delta)
 {
-    const Vector2i newPosition = position + delta;
+    const Vector2i newPosition = _position + delta;
 
     if (map.IsInBounds(newPosition))
     {
         if (map.GetTile(newPosition)->IsWalkable())
         {
-            position = newPosition;
+            _position = newPosition;
         }
     }
 }
 
 Vector2i Player::GetPosition()
 {
-    return position;
+    return _position;
 }

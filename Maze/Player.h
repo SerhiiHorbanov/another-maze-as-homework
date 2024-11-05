@@ -7,10 +7,10 @@ class MazeMap;
 class Player
 {
 private:
-    Vector2i position;
+    Vector2i _position;
 
     Player(const Vector2i& position) : 
-        position(position)
+        _position(position)
     {}
 
 public:
