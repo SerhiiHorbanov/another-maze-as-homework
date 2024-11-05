@@ -2,7 +2,7 @@
 
 class Tile
 {
-private:
+public:
     enum class Type : char
     {
         Floor = '.',
@@ -10,11 +10,23 @@ private:
         Finish = 'F'
     };
 
+private:
     Type _type;
 
 public:
+
+    Tile(Type type) :
+        _type(type)
+    {}
+
+    Tile() :
+        _type(Type::Floor)
+    {}
+
     char GetChar() const;
     bool IsWalkable() const;
     bool IsFinish() const;
+
+    static Tile GenerateRandomTile(int wallsFrequencyPercents);
 };
 

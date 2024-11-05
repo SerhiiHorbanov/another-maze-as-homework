@@ -1,4 +1,5 @@
 #include "Tile.h"
+#include <random>
 
 char Tile::GetChar() const
 {
@@ -13,4 +14,10 @@ bool Tile::IsWalkable() const
 bool Tile::IsFinish() const
 {
     return _type == Type::Finish;
+}
+
+Tile Tile::GenerateRandomTile(int wallsFrequencyPercents)
+{
+    bool isWall = std::rand() % 100 < wallsFrequencyPercents;
+    return isWall ? Tile(Type::Wall) : Tile(Type::Floor);
 }
