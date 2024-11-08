@@ -8,6 +8,7 @@ const int height = 10;
 const int wallsFrequencyPercents = 25;
 
 char map[height][width];
+int timeLeft = 20;
 
 enum TileType
 {
@@ -214,11 +215,20 @@ void Input()
 void Update()
 {
     TryMove();
+    timeLeft--;
 }
 
-bool GameEnded()
+bool HasPlayerWon()
 {
     return map[playerY][playerX] == TileType::Finish;
+}
+bool HasPlayerLost()
+{
+    return timeLeft <= 0;
+}
+bool HasGameEnded()
+{
+    return HasPlayerWon() || HasPlayerLost();
 }
 
 int main()
@@ -226,7 +236,7 @@ int main()
     GenerateMap();
     RandomizePlayerPosition();
 
-    while (!GameEnded())
+    while (!HasGameEnded())
     {
         Render();
         Input();
