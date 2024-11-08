@@ -1,52 +1,72 @@
+#include <conio.h>
 #include <iostream>
-#include <vector>
 #include <random>
+#include <tuple>
 
 const int width = 10;
 const int height = 10;
-const int wallFrequencyPercents = 25;
+const int wallsFrequencyPercents = 25;
 
 char map[height][width];
 
-char playerChar = '@';
+const char playerChar = '@';
+const char wallChar = '#';
+const char floorChar = '.';
+const char finishChar = 'F';
+
 int playerX = 0;
 int playerY = 0;
+
 int dx = 0;
 int dy = 0;
 
-int finishX = 0;
-int finishY = 0;
-bool reachedFinish = false;
+char GenerateTile()
+{
+    if (std::rand() % 100 < wallsFrequencyPercents)
+        return wallChar;
+    return floorChar;
+}
+
+std::pair<int, int> GetRandomMapPosition()
+{
+    int x = std::rand() % width;
+    int y = std::rand() % height;
+
+    return { x, y };
+}
 
 void GenerateMap()
 {
     srand(time(NULL));
+
     for (int y = 0; y < height; y++)
     {
         for (int x = 0; x < width; x++)
         {
-            if (std::rand() % 100 < wallFrequencyPercents)
-                map[y][x] = '#';
-            else
-                map[y][x] = '.';
+            map[y][x] = GenerateTile();
         }
     }
 
-    finishX = std::rand() % width;
-    finishY = std::rand() % height;
-
-    map[finishY][finishX] = 'F';
+    std::pair<int, int> finishPosition = GetRandomMapPosition();
+    map[finishPosition.first][finishPosition.second] = finishChar;
 }
 
 void RandomizePlayerPosition()
 {
-    playerX = std::rand() % width;
-    playerX = std::rand() % height;
+    std::pair<int, int> newPosition = GetRandomMapPosition();
+    playerX = newPosition.first;
+    playerY = newPosition.second;
 }
 
 bool IsWalkable(char tile)
 {
-    return tile != '#';
+    return tile != wallChar;
+}
+
+bool isInMapBounds(int x, int y)
+{
+    bool NotTooLow = x >= 0 && y >= 0;
+    return x < width && y < height;
 }
 
 bool CanMove()
@@ -54,12 +74,9 @@ bool CanMove()
     int toX = playerX + dx;
     int toY = playerY + dy;
 
-    if (toX < 0 || toY < 0)
-        return false;
-    if (toX >= width || toY >= height)
-        return false;
-
-    return IsWalkable(map[toY][toX]);
+    if (isInMapBounds(toX, toY))
+        return IsWalkable(map[toY][toX]);
+    return false;
 }
 
 void Move()
@@ -74,66 +91,76 @@ void TryMove()
         Move();
 }
 
-void CheckFinish()
-{
-    reachedFinish = finishX == playerX && finishY == playerY;
-}
-
 bool GameEnded()
 {
-    return reachedFinish;
+    return map[playerY][playerX] == finishChar;
+}
+
+void PlacePlayerInImage(std::string& image)
+{
+    const int index = playerY * (width + 1) + playerX;
+    image[index] = playerChar;
+}
+
+void PlaceTileInImage(std::string& image, int x, int y)
+{
+    const int charIndex = (y * (width + 1)) + x;
+    image[charIndex] = map[y][x];
+}
+
+std::string GetImage()
+{
+    std::string result = std::string((width + 1) * height, '\n');
+
+    for (int y = 0; y < height; y++)
+    {
+        for (int x = 0; x < width; x++)
+            PlaceTileInImage(result, x, y);
+    }
+
+    PlacePlayerInImage(result);
+
+    return result;
 }
 
 void Render()
 {
     std::system("cls");
-    for (int y = 0; y < height; y++)
-    {
-        for (int x = 0; x < width; x++)
-        {
-            if (y == playerY && x == playerX)
-            {
-                std::cout << playerChar;
-                continue;
-            }
-            std::cout << map[y][x];
-        }
-        std::cout << '\n';
-    }
+    std::string image = GetImage();
+    std::cout << image;
 }
 
-void Input()
+void ProcessInput(char input)
 {
-    std::string input;
-    std::cin >> input;
-
     dy = 0;
     dx = 0;
-    switch (input[0])
+    switch (input)
     {
     case 'w':
-    case 'W':
         dy = -1;
         break;
     case 's':
-    case 'S':
         dy = 1;
         break;
     case 'a':
-    case 'A':
         dx = -1;
         break;
     case 'd':
-    case 'D':
         dx = 1;
         break;
     }
 }
 
+void Input()
+{
+    char input = _getch();
+
+    ProcessInput(input);
+}
+
 void Update()
 {
     TryMove();
-    CheckFinish();
 }
 
 int main()
@@ -148,5 +175,5 @@ int main()
         Update();
     }
 
-    std::cout << "YNNNNNNNNNNN";
+    return 0;
 }
