@@ -18,6 +18,9 @@ public:
     {}
 
     std::string ToString() const;
+
+    static Vector2i GetRandomVector();
 };
 
 Vector2i operator+(const Vector2i left, const Vector2i right);
+Vector2i operator%(const Vector2i left, const Vector2i right);

@@ -4,10 +4,8 @@
 
 Player Player::GetRandomlyPlacedPlayer(Vector2i mapSize)
 {
-    int x = std::rand() % mapSize.x;
-    int y = std::rand() % mapSize.y;
-
-    return Player(Vector2i(x, y));
+    Vector2i position = Vector2i::GetRandomVector() % mapSize;
+    return Player(position);
 }
 
 void Player::Walk(const MazeMap& map, const Vector2i delta)
