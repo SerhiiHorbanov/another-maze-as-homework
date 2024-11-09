@@ -2,15 +2,14 @@
 #include <iostream>
 #include <random>
 #include <tuple>
+#include <vector>
 
 const int width = 10;
 const int height = 10;
 const int wallsFrequencyPercents = 25;
 
-char map[height][width];
-int timeLeft = 20;
 
-enum TileType
+enum class TileType : char
 {
     Wall = '#',
     Floor = '.',
@@ -18,6 +17,9 @@ enum TileType
     Jetpack = 'J'
 };
 const char playerChar = '@';
+
+TileType map[height][width];
+int timeLeft = 20;
 
 int playerX = 0;
 int playerY = 0;
@@ -38,25 +40,33 @@ std::pair<int, int> GetRandomMapPosition()
     return { x, y };
 }
 
-char GenerateTile()
+TileType GenerateTile()
 {
     if (std::rand() % 100 < wallsFrequencyPercents)
         return TileType::Wall;
     return TileType::Floor;
 }
-void PlaceTileRandomlyOnFloor(TileType tile)
+void ReplaceRandomTileOfTypeWith(TileType newTile, TileType replaced)
 {
-    std::pair<int, int> tilePosition;
-    char tileInPossiblePosition;
+    std::vector<TileType&> possibleReplcedTilesPositions = std::vector<TileType&>();
+    possibleReplcedTilesPositions.reserve(width * height);
 
-    do
+    
+    for (int y = 0; y < height; y++)
     {
-        tilePosition = GetRandomMapPosition();
-        tileInPossiblePosition = map[tilePosition.second][tilePosition.first];
-    } 
-    while (tileInPossiblePosition != TileType::Floor);
+        for (int x = 0; x < width; x++)
+        {
+            if (map[y][x] == replaced)
+                possibleReplcedTilesPositions.push_back(map[y][x]);
+        }
+    }
 
-    map[tilePosition.second][tilePosition.first] = tile;
+    const int possibleReplcedTilesPositionsAmount = possibleReplcedTilesPositions.size();
+    if (possibleReplcedTilesPositionsAmount == 0)
+        return;
+
+    const int randomIndex = std::rand() % possibleReplcedTilesPositionsAmount;
+    possibleReplcedTilesPositions[randomIndex] = newTile;
 }
 void GenerateMap()
 {
@@ -69,8 +79,8 @@ void GenerateMap()
             map[y][x] = GenerateTile();
         }
     }
-    PlaceTileRandomlyOnFloor(TileType::Finish);
-    PlaceTileRandomlyOnFloor(TileType::Jetpack);
+    ReplaceRandomTileOfTypeWith(TileType::Finish, TileType::Floor);
+    ReplaceRandomTileOfTypeWith(TileType::Jetpack, TileType::Floor);
 }
 
 void RandomizePlayerPosition()
@@ -80,7 +90,7 @@ void RandomizePlayerPosition()
     playerY = newPosition.second;
 }
 
-bool IsWalkable(char tile)
+bool IsWalkable(TileType tile)
 {
     return tile != TileType::Wall && !(playerHasJetpack && tile == TileType::Jetpack);
 }
@@ -155,7 +165,7 @@ void TryMove()
 void PlaceTileInImage(std::string& image, int x, int y)
 {
     const int charIndex = (y * (width + 1)) + x;
-    image[charIndex] = map[y][x];
+    image[charIndex] = (char)map[y][x];
 }
 void PlacePlayerInImage(std::string& image)
 {
