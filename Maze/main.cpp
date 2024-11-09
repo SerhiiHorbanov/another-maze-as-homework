@@ -111,6 +111,10 @@ bool IsWalkable(TileType tile)
 {
     return tile != TileType::Wall && !(playerHasJetpack && tile == TileType::Jetpack);
 }
+bool CanFlyOver(TileType tile)
+{
+    return tile == TileType::Wall || tile == TileType::Jetpack;
+}
 bool isInMapBounds(int x, int y)
 {
     bool notTooLow = x >= 0 && y >= 0;
@@ -119,29 +123,31 @@ bool isInMapBounds(int x, int y)
 }
 bool isInMapBounds(Vector2i position)
 {
-    bool notTooLow = position.x >= 0 && position.y >= 0;
-    bool notTooHigh = position.x < width && position.y < height;
-    return notTooLow && notTooHigh;
+    return isInMapBounds(position.x, position.y);
 }
-bool CanMoveTo(Vector2i position)
-{
-    if (isInMapBounds(position))
-        return IsWalkable(GetMapTile(position));
-    return false;
-}
-
 bool CanWalk()
 {
     Vector2i toPosition = playerPosition + direction;
-    return CanMoveTo(toPosition);
+    if (!isInMapBounds(toPosition))
+        return false;
+    return IsWalkable(GetMapTile(toPosition));
 }
 bool CanUseJetpack()
 {
     if (!playerHasJetpack)
         return false;
 
+    Vector2i flyingOverPosition = playerPosition + direction;
     Vector2i toPosition = playerPosition + (direction * 2);
-    return CanMoveTo(toPosition);
+
+    if (!isInMapBounds(toPosition))
+        return false;
+
+    TileType toTile = GetMapTile(toPosition);
+    TileType flyingOverTile = GetMapTile(flyingOverPosition);
+
+    if (CanFlyOver(GetMapTile(flyingOverPosition)))
+        return IsWalkable(toTile);
 }
 
 void UpdateMovingDeltas()
