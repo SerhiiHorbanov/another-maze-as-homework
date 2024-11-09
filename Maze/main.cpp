@@ -3,6 +3,7 @@
 #include <random>
 #include <tuple>
 #include <vector>
+#include "Vector2i.h"
 
 const int width = 10;
 const int height = 10;
@@ -21,18 +22,27 @@ const char playerChar = '@';
 TileType map[height][width];
 int timeLeft = 20;
 
-int playerX = 0;
-int playerY = 0;
+Vector2i playerPosition;
 
 bool playerHasJetpack = false;
 
-int directionX = 0;
-int directionY = 0;
+Vector2i direction;
 
-int dx = 0;
-int dy = 0;
+Vector2i delta;
 
-std::pair<int, int> GetRandomMapPosition()
+TileType GetMapTile(Vector2i position)
+{
+    return map[position.y][position.x];
+}
+TileType GetMapTile(int x, int y)
+{
+    return map[y][x];
+}
+void SetMapTile(Vector2i position, TileType tile)
+{
+    map[position.y][position.x] = tile;
+}
+Vector2i GetRandomMapPosition()
 {
     int x = std::rand() % width;
     int y = std::rand() % height;
@@ -48,7 +58,7 @@ TileType GenerateTile()
 }
 void ReplaceRandomTileOfTypeWith(TileType newTile, TileType replaced)
 {
-    std::vector<TileType&> possibleReplcedTilesPositions = std::vector<TileType&>();
+    std::vector<TileType*> possibleReplcedTilesPositions = std::vector<TileType*>();
     possibleReplcedTilesPositions.reserve(width * height);
 
     
@@ -57,7 +67,7 @@ void ReplaceRandomTileOfTypeWith(TileType newTile, TileType replaced)
         for (int x = 0; x < width; x++)
         {
             if (map[y][x] == replaced)
-                possibleReplcedTilesPositions.push_back(map[y][x]);
+                possibleReplcedTilesPositions.push_back(&map[y][x]);
         }
     }
 
@@ -66,7 +76,7 @@ void ReplaceRandomTileOfTypeWith(TileType newTile, TileType replaced)
         return;
 
     const int randomIndex = std::rand() % possibleReplcedTilesPositionsAmount;
-    possibleReplcedTilesPositions[randomIndex] = newTile;
+    *possibleReplcedTilesPositions[randomIndex] = newTile;
 }
 void GenerateMap()
 {
@@ -85,9 +95,8 @@ void GenerateMap()
 
 void RandomizePlayerPosition()
 {
-    std::pair<int, int> newPosition = GetRandomMapPosition();
-    playerX = newPosition.first;
-    playerY = newPosition.second;
+    Vector2i newPosition = GetRandomMapPosition();
+    playerPosition = newPosition;
 }
 
 bool IsWalkable(TileType tile)
@@ -96,62 +105,63 @@ bool IsWalkable(TileType tile)
 }
 bool isInMapBounds(int x, int y)
 {
-    bool NotTooLow = x >= 0 && y >= 0;
-    return x < width && y < height;
+    bool notTooLow = x >= 0 && y >= 0;
+    bool notTooHigh = x >= 0 && y >= 0;
+    return notTooLow && notTooHigh;
 }
-bool CanMoveTo(int tileX, int tileY)
+bool isInMapBounds(Vector2i position)
 {
-    if (isInMapBounds(tileX, tileY))
-        return IsWalkable(map[tileY][tileX]);
+    bool notTooLow = position.x >= 0 && position.y >= 0;
+    bool notTooHigh = position.x < width && position.y < height;
+    return notTooLow && notTooHigh;
+}
+bool CanMoveTo(Vector2i position)
+{
+    if (isInMapBounds(position))
+        return IsWalkable(GetMapTile(position));
     return false;
 }
 
 bool CanWalk()
 {
-    int toX = playerX + directionX;
-    int toY = playerY + directionY;
-    return CanMoveTo(toX, toY);
+    Vector2i toPosition = playerPosition + direction;
+    return CanMoveTo(toPosition);
 }
 bool CanUseJetpack()
 {
     if (!playerHasJetpack)
         return false;
 
-    int toX = playerX + (directionX * 2);
-    int toY = playerY + (directionY * 2);
-    return CanMoveTo(toX, toY);
+    Vector2i toPosition = playerPosition + (direction * 2);
+    return CanMoveTo(toPosition);
 }
 
 void UpdateMovingDeltas()
 {
     if (CanWalk())
     {
-        dx = directionX;
-        dy = directionY;
+        delta = direction;
         return;
     }
     if (CanUseJetpack())
     {
-        dx = directionX * 2;
-        dy = directionY * 2;
+        delta = direction * 2;
         playerHasJetpack = false;
         return;
     }
-    dx = 0;
-    dy = 0;
+    delta = Vector2i();
 }
 void Move()
 {
-    playerX += dx;
-    playerY += dy;
+    playerPosition += delta;
 }
 
 void CheckForPickups()
 {
-    if (map[playerY][playerX] == TileType::Jetpack)
+    if (GetMapTile(playerPosition) == TileType::Jetpack)
     {
         playerHasJetpack = true;
-        map[playerY][playerX] = TileType::Floor;
+        SetMapTile(playerPosition, TileType::Floor);
     }
 }
 
@@ -169,10 +179,10 @@ void PlaceTileInImage(std::string& image, int x, int y)
 }
 void PlacePlayerInImage(std::string& image)
 {
-    const int index = playerY * (width + 1) + playerX;
+    const int index = (playerPosition.y * (width + 1)) + playerPosition.x;
     image[index] = playerChar;
 }
-std::string GetImage()
+std::string GetMapImage()
 {
     std::string result = std::string((width + 1) * height, '\n');
 
@@ -189,21 +199,20 @@ std::string GetImage()
 
 void ProcessInput(char input)
 {
-    directionY = 0;
-    directionX = 0;
+    direction = Vector2i();
     switch (input)
     {
     case 'w':
-        directionY = -1;
+        direction.y = -1;
         break;
     case 's':
-        directionY = 1;
+        direction.y = 1;
         break;
     case 'a':
-        directionX = -1;
+        direction.x = -1;
         break;
     case 'd':
-        directionX = 1;
+        direction.x = 1;
         break;
     }
 }
@@ -211,8 +220,8 @@ void ProcessInput(char input)
 void Render()
 {
     std::system("cls");
-    std::string image = GetImage();
-    std::cout << image;
+    std::string mapImage = GetMapImage();
+    std::cout << mapImage;
 }
 
 void Input()
@@ -230,7 +239,7 @@ void Update()
 
 bool HasPlayerWon()
 {
-    return map[playerY][playerX] == TileType::Finish;
+    return GetMapTile(playerPosition) == TileType::Finish;
 }
 bool HasPlayerLost()
 {
