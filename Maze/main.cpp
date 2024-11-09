@@ -260,6 +260,14 @@ bool HasGameEnded()
     return HasPlayerWon() || HasPlayerLost();
 }
 
+void DisplayGameEndMessage()
+{
+    if (HasPlayerWon())
+        std::cout << "(:";
+    if (HasPlayerLost())
+        std::cout << "):";
+}
+
 int main()
 {
     GenerateMap();
@@ -272,5 +280,6 @@ int main()
         Update();
     }
 
+    DisplayGameEndMessage();
     return 0;
 }
