@@ -3,7 +3,19 @@
 #include <random>
 #include <tuple>
 #include <vector>
-#include "Headers\Vector2i.h"
+
+std::pair<int, int> operator+(const std::pair<int, int> left, const std::pair<int, int>right)
+{
+    return std::pair<int, int>(left.first + right.first, left.second + right.second);
+}
+std::pair<int, int> operator*(const std::pair<int, int> left, const int right)
+{
+    return std::pair<int, int>(left.first * right, left.second * right);
+}
+void operator+=(std::pair<int, int>& left, const std::pair<int, int> right)
+{
+    left = left + right;
+}
 
 const int width = 10;
 const int height = 10;
@@ -25,27 +37,26 @@ const char playerChar = '@';
 TileType map[height][width];
 int timeLeft = 20;
 
-Vector2i playerPosition;
+std::pair<int, int> playerPosition;
 
 bool playerHasJetpack = false;
 
-Vector2i direction;
+std::pair<int, int> direction;
+std::pair<int, int> delta;
 
-Vector2i delta;
-
-TileType GetMapTile(Vector2i position)
+TileType GetMapTile(std::pair<int, int> position)
 {
-    return map[position.y][position.x];
+    return map[position.second][position.first];
 }
 TileType GetMapTile(int x, int y)
 {
     return map[y][x];
 }
-void SetMapTile(Vector2i position, TileType tile)
+void SetMapTile(std::pair<int, int> position, TileType tile)
 {
-    map[position.y][position.x] = tile;
+    map[position.second][position.first] = tile;
 }
-Vector2i GetRandomMapPosition()
+std::pair<int, int> GetRandomMapPosition()
 {
     int x = std::rand() % width;
     int y = std::rand() % height;
@@ -103,7 +114,7 @@ void GenerateMap()
 
 void RandomizePlayerPosition()
 {
-    Vector2i newPosition = GetRandomMapPosition();
+    std::pair<int, int> newPosition = GetRandomMapPosition();
     playerPosition = newPosition;
 }
 
@@ -121,13 +132,13 @@ bool isInMapBounds(int x, int y)
     bool notTooHigh = x >= 0 && y >= 0;
     return notTooLow && notTooHigh;
 }
-bool isInMapBounds(Vector2i position)
+bool isInMapBounds(std::pair<int, int> position)
 {
-    return isInMapBounds(position.x, position.y);
+    return isInMapBounds(position.first, position.second);
 }
 bool CanWalk()
 {
-    Vector2i toPosition = playerPosition + direction;
+    std::pair<int, int> toPosition = playerPosition + direction;
     if (!isInMapBounds(toPosition))
         return false;
     return IsWalkable(GetMapTile(toPosition));
@@ -137,8 +148,8 @@ bool CanUseJetpack()
     if (!playerHasJetpack)
         return false;
 
-    Vector2i flyingOverPosition = playerPosition + direction;
-    Vector2i toPosition = playerPosition + (direction * 2);
+    std::pair<int, int> flyingOverPosition = playerPosition + direction;
+    std::pair<int, int> toPosition = playerPosition + (direction * 2);
 
     if (!isInMapBounds(toPosition))
         return false;
@@ -163,7 +174,7 @@ void UpdateMovingDeltas()
         playerHasJetpack = false;
         return;
     }
-    delta = Vector2i();
+    delta = std::pair<int, int>();
 }
 void Move()
 {
@@ -193,7 +204,7 @@ void PlaceTileInImage(std::string& image, int x, int y)
 }
 void PlacePlayerInImage(std::string& image)
 {
-    const int index = (playerPosition.y * (width + 1)) + playerPosition.x;
+    const int index = (playerPosition.second * (width + 1)) + playerPosition.first;
     image[index] = playerChar;
 }
 std::string GetMapImage()
@@ -213,20 +224,20 @@ std::string GetMapImage()
 
 void ProcessInput(char input)
 {
-    direction = Vector2i();
+    direction = std::pair<int, int>();
     switch (input)
     {
     case 'w':
-        direction.y = -1;
+        direction.second = -1;
         break;
     case 's':
-        direction.y = 1;
+        direction.second = 1;
         break;
     case 'a':
-        direction.x = -1;
+        direction.first = -1;
         break;
     case 'd':
-        direction.x = 1;
+        direction.first = 1;
         break;
     }
 }
