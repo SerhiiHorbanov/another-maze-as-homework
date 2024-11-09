@@ -3,7 +3,7 @@
 #include <random>
 #include <tuple>
 #include <vector>
-#include "Vector2i.h"
+#include "Headers\Vector2i.h"
 
 const int width = 10;
 const int height = 10;
