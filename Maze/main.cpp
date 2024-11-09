@@ -8,14 +8,17 @@
 const int width = 10;
 const int height = 10;
 const int wallsFrequencyPercents = 25;
+const int spikesFrequencyPercents = 10;
 
+const int spikesPlusWallsFrequencyPercents = wallsFrequencyPercents + spikesFrequencyPercents;
 
 enum class TileType : char
 {
     Wall = '#',
     Floor = '.',
     Finish = 'F',
-    Jetpack = 'J'
+    Jetpack = 'J',
+    Spike = '^'
 };
 const char playerChar = '@';
 
@@ -52,8 +55,13 @@ Vector2i GetRandomMapPosition()
 
 TileType GenerateTile()
 {
-    if (std::rand() % 100 < wallsFrequencyPercents)
+    int random = std::rand() % 100;
+
+    if (random < wallsFrequencyPercents)
         return TileType::Wall;
+    if (random < spikesPlusWallsFrequencyPercents)
+        return TileType::Spike;
+    
     return TileType::Floor;
 }
 void ReplaceRandomTileOfTypeWith(TileType newTile, TileType replaced)
@@ -243,7 +251,9 @@ bool HasPlayerWon()
 }
 bool HasPlayerLost()
 {
-    return timeLeft <= 0;
+    bool timeRanOut = timeLeft <= 0;
+    bool isPlayerOnSpike = GetMapTile(playerPosition) == TileType::Spike;
+    return timeRanOut || isPlayerOnSpike;
 }
 bool HasGameEnded()
 {
