@@ -77,25 +77,24 @@ TileType GenerateTile()
 }
 void ReplaceRandomTileOfTypeWith(TileType newTile, TileType replaced)
 {
-    std::vector<TileType*> possibleReplcedTilesPositions = std::vector<TileType*>();
-    possibleReplcedTilesPositions.reserve(width * height);
+    std::vector<TileType*> replcableTiles = std::vector<TileType*>();
+    replcableTiles.reserve(width * height);
 
-    
     for (int y = 0; y < height; y++)
     {
         for (int x = 0; x < width; x++)
         {
             if (map[y][x] == replaced)
-                possibleReplcedTilesPositions.push_back(&map[y][x]);
+                replcableTiles.push_back(&map[y][x]);
         }
     }
 
-    const int possibleReplcedTilesPositionsAmount = possibleReplcedTilesPositions.size();
-    if (possibleReplcedTilesPositionsAmount == 0)
+    const int replacableTilesAmount = replcableTiles.size();
+    if (replacableTilesAmount == 0)
         return;
 
-    const int randomIndex = std::rand() % possibleReplcedTilesPositionsAmount;
-    *possibleReplcedTilesPositions[randomIndex] = newTile;
+    const int randomIndex = std::rand() % replacableTilesAmount;
+    *replcableTiles[randomIndex] = newTile;
 }
 void GenerateMap()
 {
@@ -114,7 +113,11 @@ void GenerateMap()
 
 void RandomizePlayerPosition()
 {
-    std::pair<int, int> newPosition = GetRandomMapPosition();
+    std::pair<int, int> newPosition;
+    do
+        newPosition = GetRandomMapPosition();
+    while (GetMapTile(newPosition) == TileType::Finish);
+    SetMapTile(newPosition, TileType::Floor);
     playerPosition = newPosition;
 }
 
