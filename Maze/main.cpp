@@ -42,7 +42,6 @@ std::pair<int, int> playerPosition;
 bool playerHasJetpack = false;
 
 std::pair<int, int> direction;
-std::pair<int, int> delta;
 
 TileType GetMapTile(std::pair<int, int> position)
 {
@@ -164,26 +163,24 @@ bool CanUseJetpack()
         return IsWalkable(toTile);
 }
 
-void UpdateMovingDeltas()
+bool CanMove()
 {
-    if (CanWalk())
-    {
-        delta = direction;
-        return;
-    }
-    if (CanUseJetpack())
-    {
-        delta = direction * 2;
-        playerHasJetpack = false;
-        return;
-    }
-    delta = std::pair<int, int>();
+    return CanWalk() || CanUseJetpack();
 }
 void Move()
 {
+    std::pair<int, int> delta;
+
+    if (CanWalk())
+        delta = direction;
+
+    else if (CanUseJetpack())
+    {
+        delta = direction * 2;
+        playerHasJetpack = false;
+    }
     playerPosition += delta;
 }
-
 void CheckForPickups()
 {
     if (GetMapTile(playerPosition) == TileType::Jetpack)
@@ -195,9 +192,8 @@ void CheckForPickups()
 
 void TryMove()
 {
-    UpdateMovingDeltas();
-    Move();
-    CheckForPickups();
+    if (CanMove())
+        Move();
 }
 
 void PlaceTileInImage(std::string& image, int x, int y)
@@ -262,6 +258,8 @@ void Input()
 void Update()
 {
     TryMove();
+    CheckForPickups();
+
     timeLeft--;
 }
 
